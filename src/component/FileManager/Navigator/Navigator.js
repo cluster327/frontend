@@ -17,6 +17,7 @@ import {
     openShareDialog,
     drawerToggleAction,
     openCompressDialog,
+    toggleSnackbar,
 } from "../../../actions/index";
 import explorer from "../../../redux/explorer";
 import API from "../../../middleware/Api";
@@ -38,6 +39,7 @@ import { Archive } from "@material-ui/icons";
 import { FilePlus } from "mdi-material-ui";
 import { openCreateFileDialog } from "../../../actions";
 import SubActions from "./SubActions";
+import {toggleObjectInfoSidebar} from "../../../redux/explorer/action";
 
 const mapStateToProps = (state) => {
     return {
@@ -64,6 +66,9 @@ const mapDispatchToProps = (dispatch) => {
         updateFileList: (list) => {
             dispatch(explorer.actions.updateFileList(list));
         },
+        selectFile: (file) => {
+            dispatch(setSelectedTarget(file));
+        },
         setNavigatorLoadingStatus: (status) => {
             dispatch(setNavigatorLoadingStatus(status));
         },
@@ -88,6 +93,12 @@ const mapDispatchToProps = (dispatch) => {
         openCompressDialog: () => {
             dispatch(openCompressDialog());
         },
+        toggleObjectInfoSidebar: (open) => {
+            dispatch(toggleObjectInfoSidebar(open));
+        },
+        toggleSnackbar: (vertical, horizontal, msg, color) => {
+            dispatch(toggleSnackbar(vertical, horizontal, msg, color))
+        }
     };
 };
 
@@ -149,7 +160,8 @@ class NavigatorComponent extends Component {
     componentDidMount = () => {
         const url = new URL(fixUrlHash(window.location.href));
         const c = url.searchParams.get("path");
-        this.renderPath(c === null ? "/" : c);
+        const f = url.searchParams.get("file")
+        this.renderPath(c === null ? "/" : c, f);
 
         if (!this.props.isShare) {
             // 如果是在个人文件管理页，首次加载时打开侧边栏
@@ -166,7 +178,7 @@ class NavigatorComponent extends Component {
         };
     };
 
-    renderPath = (path = null) => {
+    renderPath = (path = null, file = null) => {
         this.props.setNavigatorError(false, null);
         this.setState({
             folders:
@@ -186,6 +198,18 @@ class NavigatorComponent extends Component {
             .then((response) => {
                 this.currentID = response.data.parent;
                 this.props.updateFileList(response.data.objects);
+                if (file) {
+                    const result = response.data.objects.filter((f) => {
+                        return f.id === file
+                    })
+                    if (result.length > 0) {
+                        this.props.selectFile(result)
+                        this.props.toggleObjectInfoSidebar(true)
+                    } else {
+                        this.props.toggleSnackbar("top", "right", "文件未找到", "error")
+                    }
+
+                }
                 this.props.setNavigatorLoadingStatus(false);
                 const pathTemp = (path !== null
                     ? path.substr(1).split("/")

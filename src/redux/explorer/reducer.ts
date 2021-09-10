@@ -1,6 +1,7 @@
 /* eslint-disable no-case-declarations */
 import { AnyAction } from "redux";
 import { CloudreveFile } from "../../types";
+import {removeGetParameter, setGetParameter} from "../../utils";
 
 interface SelectProps {
     isMultiple: boolean;
@@ -68,6 +69,15 @@ export const initState: ExplorerState = {
     sideBarOpen: false,
 };
 
+const setUrlParamForSingleItem = (selected: CloudreveFile[]) => {
+    if (selected.length != 1 || !selected[0]) {
+        removeGetParameter("file")
+        return
+    }
+    const file = selected[0]
+    setGetParameter("file", file.id)
+}
+
 const checkSelectedProps = (selected: CloudreveFile[]): SelectProps => {
     const isMultiple = selected.length > 1;
     let withFolder = false;
@@ -113,6 +123,7 @@ const explorer = (
             });
         case "SET_SELECTED_TARGET":
             const newSelected = action.targets;
+            setUrlParamForSingleItem(newSelected)
             return Object.assign({}, state, {
                 selected: newSelected,
                 selectProps: checkSelectedProps(newSelected),

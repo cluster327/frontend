@@ -40,6 +40,28 @@ export const setGetParameter = (paramName, paramValue) => {
     window.history.pushState(null, null, url);
 };
 
+export const removeGetParameter = (paramName) => {
+    let url = window.location.href;
+
+    if (url.indexOf(paramName + "=") >= 0) {
+        const prefix = url.substring(0, url.indexOf(paramName));
+        let suffix = url.substring(url.indexOf(paramName));
+        suffix = suffix.substring(suffix.indexOf("=") + 1);
+        suffix =
+            suffix.indexOf("&") >= 0
+                ? suffix.substring(suffix.indexOf("&"))
+                : "";
+        url = prefix + suffix;
+    }
+    if (url.indexOf("&") === url.length - 1) {
+        url = url.substring(0, url.length - 1)
+    }
+    if (url === window.location.href) {
+        return;
+    }
+    window.history.pushState(null, null, url);
+}
+
 export const allowSharePreview = () => {
     if (!window.isSharePage) {
         return true;

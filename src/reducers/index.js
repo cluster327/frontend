@@ -4,9 +4,11 @@ import { combineReducers } from "../redux/combineReducers";
 import viewUpdate from "../redux/viewUpdate/reducer";
 import explorer from "../redux/explorer/reducer";
 import { connectRouter } from "connected-react-router";
+import {removeGetParameter} from "../utils";
 
 const doNavigate = (path, state) => {
     window.currntPath = path;
+    removeGetParameter("file")
     return Object.assign({}, state, {
         navigator: Object.assign({}, state.navigator, {
             path: path,
